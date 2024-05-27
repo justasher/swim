@@ -2,16 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:swim/src/pool.dart';
+import 'package:swim/src/provider.dart';
 
 class Swim<T extends Pool> extends StatefulWidget {
-  final T pool;
   final String? id;
   final Widget Function(BuildContext context) builder;
 
   const Swim({
     Key? key,
     this.id,
-    required this.pool,
     required this.builder,
   }) : super(key: key);
 
@@ -20,18 +19,20 @@ class Swim<T extends Pool> extends StatefulWidget {
 }
 
 class SwimState<T extends Pool> extends State<Swim<T>> {
+  late T pool;
+
   @override
   void initState() {
     super.initState();
-    widget.pool.addListener(_listener);
-    //PoolProvider.registerSwim<T>(widget.pool.hashCode);
-    widget.pool.onInit();
+    pool = Provider.getAndCreateIfNull<T>(id: widget.id);
+    pool.addListener(_listener);
+    Provider.registerObserver<T>(pool.hashCode);
   }
 
   @override
   void dispose() {
-    widget.pool.removeListener(_listener);
-    //PoolProvider.unregisterSwim<T>(widget.pool.hashCode);
+    pool.removeListener(_listener);
+    Provider.unregisterObserver<T>(pool.hashCode);
     super.dispose();
   }
 
